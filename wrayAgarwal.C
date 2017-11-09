@@ -128,6 +128,11 @@ wrayAgarwal<BasicTurbulenceModel>::wrayAgarwal
 {
    C2kw_ = C1kw_/sqr(kappa_) + sigmakw_;
    C2ke_ = C1ke_/sqr(kappa_) + sigmake_;
+
+    if (type == typeName)
+    {
+        this->printCoeffs(type);
+    }
 }
 
 template<class BasicTurbulenceModel>
@@ -145,11 +150,15 @@ wrayAgarwal<BasicTurbulenceModel>::f1(const volScalarField& S)
 {
     volScalarField arg1
     (
-        (1 + y_*sqrt(R_*S)/this->nu())/
-        (1 + sqr(max(y_*sqrt(R_*S), 1.5*R_)/20/this->nu()))
+        (1.0 + y_*sqrt(R_*S)/this->nu())/
+        (1.0 + sqr(max(y_*sqrt(R_*S), 1.5*R_)/(20.0*this->nu())))
     );
 
-    return min(tanh(pow4(arg1)), 0.9);
+    return min(tanh(pow4(arg1)), 0.9);    
+    // return tmp<volScalarField>
+    // (
+    //     new volScalarField("f1", dimensionSet(0, 0, 0, 0, 0), min(tanh(pow4(arg1)), 0.9))
+    // );
 }
 
 template<class BasicTurbulenceModel>
@@ -260,7 +269,8 @@ wrayAgarwal<BasicTurbulenceModel>::correct()
 
     // const volScalarField Stilda(this->Stilda(chi, fv1));
    
-    const volScalarField S(sqrt(2*magSqr(symm(fvc::grad(this->U_)))));
+    volScalarField S(sqrt(2*magSqr(symm(fvc::grad(this->U_)))));
+    S = max(S, dimensionedScalar("SMALL", S.dimensions(), 1.0e-10));
    
     const volVectorField gradS(fvc::grad(S));    
 
@@ -275,7 +285,7 @@ wrayAgarwal<BasicTurbulenceModel>::correct()
      ==
         alpha*rho*C1*R_*S
       + alpha*rho*tf1*C2kw_*R_/S*(fvc::grad(R_) & gradS)
-      - alpha*rho*(1.0 - tf1)*C2ke_*sqr(R_)*(gradS & gradS)/sqr(S)
+      - fvm::Sp(alpha*rho*(1.0 - tf1)*C2ke_*R_*(gradS & gradS)/sqr(S), R_)
       + fvOptions(alpha, rho, R_)
     );
 
@@ -283,7 +293,7 @@ wrayAgarwal<BasicTurbulenceModel>::correct()
     fvOptions.constrain(REqn.ref());
     solve(REqn);
     fvOptions.correct(R_);
-    // bound(R_, dimensionedScalar("0", R_.dimensions(), 0.0));
+    bound(R_, dimensionedScalar("0", R_.dimensions(), 0.0));
     R_.correctBoundaryConditions();
 
     correctNut();

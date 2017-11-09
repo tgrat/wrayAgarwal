@@ -70,11 +70,11 @@ protected:
     dimensionedScalar sigmakw_;
     dimensionedScalar sigmake_;
 
-    dimensionedScalar C2kw_;
-    dimensionedScalar C2ke_;
-
     dimensionedScalar kappa_;
     dimensionedScalar Cw_;
+
+    dimensionedScalar C2kw_;
+    dimensionedScalar C2ke_;
 
     const volScalarField& y_;
 
