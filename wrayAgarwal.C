@@ -154,7 +154,7 @@ wrayAgarwal<BasicTurbulenceModel>::f1(const volScalarField& S)
         (1.0 + sqr(max(y_*sqrt(R_*S), 1.5*R_)/(20.0*this->nu())))
     );
 
-    return min(tanh(pow4(arg1)), 0.9);    
+    return min(tanh(pow4(arg1)), scalar(0.9));    
     // return tmp<volScalarField>
     // (
     //     new volScalarField("f1", dimensionSet(0, 0, 0, 0, 0), min(tanh(pow4(arg1)), 0.9))
@@ -181,7 +181,6 @@ wrayAgarwal<BasicTurbulenceModel>::read()
     {
         C1kw_.readIfPresent(this->coeffDict());
         C1ke_.readIfPresent(this->coeffDict());
-
         sigmakw_.readIfPresent(this->coeffDict());
         sigmake_.readIfPresent(this->coeffDict());
         kappa_.readIfPresent(this->coeffDict());
@@ -263,14 +262,9 @@ wrayAgarwal<BasicTurbulenceModel>::correct()
     fv::options& fvOptions(fv::options::New(this->mesh_));
 
     eddyViscosity<RASModel<BasicTurbulenceModel>>::correct();
-
-    // const volScalarField chi(this->chi());
-    // const volScalarField fv1(this->fv1(chi));
-
-    // const volScalarField Stilda(this->Stilda(chi, fv1));
    
     volScalarField S(sqrt(2*magSqr(symm(fvc::grad(this->U_)))));
-    S = max(S, dimensionedScalar("SMALL", S.dimensions(), 1.0e-10));
+    S = max(S, dimensionedScalar("SMALL", S.dimensions(), 1.0e-16));
    
     const volVectorField gradS(fvc::grad(S));    
 
@@ -281,10 +275,10 @@ wrayAgarwal<BasicTurbulenceModel>::correct()
     (
         fvm::ddt(alpha, rho, R_)
       + fvm::div(alphaRhoPhi, R_)
-      - fvm::laplacian(alpha*rho*DREff(S), R_)
+      - fvm::laplacian(alpha*rho*DREff(tf1), R_)
      ==
         alpha*rho*C1*R_*S
-      + alpha*rho*tf1*C2kw_*R_/S*(fvc::grad(R_) & gradS)
+      + alpha*rho*tf1*C2kw_*R_*(fvc::grad(R_) & gradS)/S
       - fvm::Sp(alpha*rho*(1.0 - tf1)*C2ke_*R_*(gradS & gradS)/sqr(S), R_)
       + fvOptions(alpha, rho, R_)
     );
