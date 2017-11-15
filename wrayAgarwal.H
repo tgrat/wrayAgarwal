@@ -38,10 +38,8 @@ SourceFiles
 #ifndef wrayAgarwal_H
 #define wrayAgarwal_H
 
-// #include "kOmegaSSTBase.H"
-#include "kOmegaSST.H"
-// #include "RASModel.H"
-// #include "eddyViscosity.H"
+#include "RASModel.H"
+#include "eddyViscosity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,7 +81,12 @@ protected:
     tmp<volScalarField> fmu();
     tmp<volScalarField> f1(const volScalarField& S);
     tmp<volScalarField> C1(const volScalarField& f1);
-    tmp<volScalarField> blend(const volScalarField& f1, const dimensionedScalar var1, const dimensionedScalar var2) const;
+    tmp<volScalarField> blend
+    (
+        const volScalarField& f1,
+        const dimensionedScalar var1,
+        const dimensionedScalar var2
+    ) const;
 
 public:
 

@@ -24,6 +24,9 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "wrayAgarwal.H"
+#include "fvOptions.H"
+#include "bound.H"
+#include "wallDist.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
